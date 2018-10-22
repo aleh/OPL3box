@@ -250,15 +250,15 @@ public:
     struct __attribute__((packed)) {
 
       // 20+
-      uint8_t mult : 4;
-      uint8_t ksr : 1;
-      uint8_t egt : 1;
-      uint8_t vib : 1;
-      uint8_t am : 1;
+      uint8_t mult : 4; // freq mult
+      uint8_t ksr : 1;  // envelope scaling
+      uint8_t egt : 1;  // sustain
+      uint8_t vib : 1;  // vibrato
+      uint8_t am : 1;   // tremolo
 
       // 40+
-      uint8_t tl : 6;
-      uint8_t ksl : 2;
+      uint8_t tl : 6;   // output level
+      uint8_t ksl : 2;  // keyboard scale level
 
       // 60+
       uint8_t dr : 4;
@@ -334,6 +334,8 @@ typedef FastPin<A3> encoder1PinB;
 EC11 encoder1;
 
 typedef SlowPin<16> encoderButton;
+
+#include "UI.h"
 
 class OPL3box : protected a21::MIDIParser<OPL3box> {
 
@@ -464,12 +466,6 @@ public:
 
   bool buttonPressed;
 
-  void draw() {
-      LCD::clear();
-      char str[10];
-      itoa(value, str, 16);
-      LCD::drawTextCentered(Font8Console::data(), 0, 1, LCD::Cols, str, Font8::DrawingScale2);      
-  }  
   
   static void check() {
 
@@ -498,20 +494,15 @@ public:
 
     bool buttonPressedNow = !encoderButton::read();
     if (self.buttonPressed && !buttonPressedNow) {
-      self.value = 0;
+      self.onEncoderButton();
       needsRedraw = true;
     }
     self.buttonPressed = buttonPressedNow;
 
     EC11Event e;
     if (encoder1.read(&e)) {
-      
-      if (e.type == EC11Event::StepCW) {        
-        self.value++;
-      } else {
-        self.value--;
-      }
-      
+
+      self.onEncoderDelta(e.type == EC11Event::StepCW ? +1 : -1);
       needsRedraw = true;
     }
 
@@ -524,6 +515,72 @@ public:
       self.draw();
     }
   }
+
+  // - //
+
+  WaveformValue            op1Waveform    = WaveformValue            (testOperator1);
+  FrequencyMutliplierValue op1FreqMult    = FrequencyMutliplierValue (testOperator1);
+  EnvScalingValue          op1EnvScaling  = EnvScalingValue          (testOperator1); 
+  SustainHoldValue         op1SustainHold = SustainHoldValue         (testOperator1); 
+  VibratoValue             op1Vibrato     = VibratoValue             (testOperator1); 
+  TremoloValue             op1Tremolo     = TremoloValue             (testOperator1); 
+  AttackValue              op1Attack      = AttackValue              (testOperator1); 
+  DecayValue               op1Decay       = DecayValue               (testOperator1); 
+  SustainValue             op1Sustain     = SustainValue             (testOperator1); 
+  ReleaseValue             op1Release     = ReleaseValue             (testOperator1);
+
+  OperatorValue * values[10] = {
+    &op1Waveform,
+    &op1FreqMult,    
+    &op1EnvScaling, 
+    &op1SustainHold,
+    &op1Vibrato,     
+    &op1Tremolo,   
+    &op1Attack,      
+    &op1Decay,    
+    &op1Sustain,    
+    &op1Release,
+  };
+
+  int uiCaret = 0;
+  int uiMenu = 0;
+
+  bool titleRow() { return uiCaret == 0; }
+  bool valueRow() { return uiCaret == 1; }
+
+  void onEncoderButton() {
+    uiCaret =  (uiCaret + 1) % 2;
+  }
+  
+  void onEncoderDelta(int delta) {
+    if (titleRow()) {
+      int count = sizeof(values) / sizeof(OperatorValue *);
+      uiMenu = max(0, min(count - 1, uiMenu + delta));
+    }
+    
+    if (valueRow()) { 
+      values[uiMenu]->onEncoderDelta(delta);
+    }
+  }
+
+  void draw() {
+      LCD::clear();
+
+      const OperatorValue * value = values[uiMenu];
+      
+      char str[50];
+      snprintf(str, sizeof(str), "%c %s", titleRow() ? '>' : ' ', value->displayName);
+      
+      LCD::drawText(Font8Console::data(), 0, 0, str, Font8::DrawingScale2);
+      
+      str[0] = valueRow() ? '>' : ' ';
+      str[1] = ' ';
+
+      value->getValueString(str + 2, sizeof(str) - 2);
+      
+      LCD::drawText(Font8Console::data(), 0, 2, str, Font8::DrawingScale2);
+  }
+
 };
 
 void setup() {
@@ -539,4 +596,3 @@ void loop() {
   encoder1.checkPins(encoder1PinA::read(), encoder1PinB::read());
   OPL3box::check();
 }
-
