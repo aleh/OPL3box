@@ -13,8 +13,8 @@ struct OperatorValue {
   OperatorValue(
     OPL3::OperatorSetup &oplOperator,
     int     maxValue,
-    char *  displayName,
-    char ** valueNames = nullptr
+    const char *  displayName,
+    const char ** valueNames = nullptr
   ):
     oplOperator(oplOperator),
     maxValue(maxValue),
@@ -28,7 +28,7 @@ struct OperatorValue {
 
   void getValueString(char * buf, size_t len) {
     int    value       = getValue();
-    char * valueString = nullptr;
+    const char * valueString = nullptr;
 
     if (valueNames) {
       valueString = valueNames[value];
@@ -51,7 +51,7 @@ const char * WaveformChoices[] = {
 
 struct WaveformValue : OperatorValue {
     
-  WaveformValue::WaveformValue(OPL3::OperatorSetup &oplOperator)
+    WaveformValue(OPL3::OperatorSetup &oplOperator)
     : OperatorValue(
         oplOperator, 
         sizeof(WaveformChoices) / sizeof(char *), 
@@ -61,7 +61,7 @@ struct WaveformValue : OperatorValue {
   { }
   
   int getValue() { return oplOperator.waveform; }
-  void setValue(int v) { oplOperator.waveform = v; }
+  void setValue(int v) { oplOperator.waveform = (OPL3::Waveform) v; }
   
 };
 
@@ -85,7 +85,7 @@ const char * FrequencyMultiplierChoices[] = {
 };
 
 struct FrequencyMutliplierValue : OperatorValue {
-  FrequencyMutliplierValue::FrequencyMutliplierValue(OPL3::OperatorSetup &oplOperator)
+  FrequencyMutliplierValue(OPL3::OperatorSetup &oplOperator)
     : OperatorValue(
         oplOperator, 
         sizeof(FrequencyMultiplierChoices) / sizeof(char *), 
@@ -105,7 +105,7 @@ static const char * BoolChoices[] = {
 };
 
 struct EnvScalingValue : OperatorValue {
-  EnvScalingValue::EnvScalingValue(OPL3::OperatorSetup &oplOperator)
+  EnvScalingValue(OPL3::OperatorSetup &oplOperator)
     : OperatorValue(
         oplOperator, 
         sizeof(BoolChoices) / sizeof(char *), 
@@ -119,7 +119,7 @@ struct EnvScalingValue : OperatorValue {
 };
 
 struct SustainHoldValue: OperatorValue {
-    SustainHoldValue::SustainHoldValue(OPL3::OperatorSetup &oplOperator)
+    SustainHoldValue(OPL3::OperatorSetup &oplOperator)
      : OperatorValue(
         oplOperator, 
         sizeof(BoolChoices) / sizeof(char *), 
@@ -133,7 +133,7 @@ struct SustainHoldValue: OperatorValue {
 };
 
 struct VibratoValue : OperatorValue {
-  VibratoValue::VibratoValue(OPL3::OperatorSetup &oplOperator)
+  VibratoValue(OPL3::OperatorSetup &oplOperator)
      : OperatorValue(
         oplOperator, 
         sizeof(BoolChoices) / sizeof(char *), 
@@ -147,7 +147,7 @@ struct VibratoValue : OperatorValue {
 };
 
 struct TremoloValue : OperatorValue {
-  TremoloValue::TremoloValue(OPL3::OperatorSetup &oplOperator)
+  TremoloValue(OPL3::OperatorSetup &oplOperator)
      : OperatorValue(
         oplOperator, 
         sizeof(BoolChoices) / sizeof(char *), 
@@ -161,7 +161,7 @@ struct TremoloValue : OperatorValue {
 };
 
 struct AttackValue : OperatorValue {
-  AttackValue::AttackValue(OPL3::OperatorSetup &oplOperator)
+  AttackValue(OPL3::OperatorSetup &oplOperator)
      : OperatorValue(
         oplOperator, 
         0x10, 
@@ -175,7 +175,7 @@ struct AttackValue : OperatorValue {
 };
 
 struct DecayValue : OperatorValue {
-  DecayValue::DecayValue(OPL3::OperatorSetup &oplOperator)
+  DecayValue(OPL3::OperatorSetup &oplOperator)
      : OperatorValue(
         oplOperator, 
         0x10, 
@@ -190,7 +190,7 @@ struct DecayValue : OperatorValue {
 };
 
 struct SustainValue : OperatorValue {
-  SustainValue::SustainValue(OPL3::OperatorSetup &oplOperator)
+  SustainValue(OPL3::OperatorSetup &oplOperator)
      : OperatorValue(
         oplOperator, 
         0x10, 
@@ -204,7 +204,7 @@ struct SustainValue : OperatorValue {
 };
 
 struct ReleaseValue : OperatorValue {
-  ReleaseValue::ReleaseValue(OPL3::OperatorSetup &oplOperator)
+  ReleaseValue(OPL3::OperatorSetup &oplOperator)
      : OperatorValue(
         oplOperator, 
         0x10, 

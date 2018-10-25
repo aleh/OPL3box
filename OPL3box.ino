@@ -566,7 +566,7 @@ public:
   void draw() {
       LCD::clear();
 
-      const OperatorValue * value = values[uiMenu];
+      OperatorValue * value = values[uiMenu];
       
       char str[50];
       snprintf(str, sizeof(str), "%c %s", titleRow() ? '>' : ' ', value->displayName);
