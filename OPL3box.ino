@@ -518,16 +518,16 @@ public:
 
   // - //
 
-  WaveformValue            op1Waveform    = WaveformValue            (testOperator1);
-  FrequencyMutliplierValue op1FreqMult    = FrequencyMutliplierValue (testOperator1);
-  EnvScalingValue          op1EnvScaling  = EnvScalingValue          (testOperator1); 
-  SustainHoldValue         op1SustainHold = SustainHoldValue         (testOperator1); 
-  VibratoValue             op1Vibrato     = VibratoValue             (testOperator1); 
-  TremoloValue             op1Tremolo     = TremoloValue             (testOperator1); 
-  AttackValue              op1Attack      = AttackValue              (testOperator1); 
-  DecayValue               op1Decay       = DecayValue               (testOperator1); 
-  SustainValue             op1Sustain     = SustainValue             (testOperator1); 
-  ReleaseValue             op1Release     = ReleaseValue             (testOperator1);
+  WaveformValue            op1Waveform    = WaveformValue            (testOperator1, 1);
+  FrequencyMutliplierValue op1FreqMult    = FrequencyMutliplierValue (testOperator1, 1);
+  EnvScalingValue          op1EnvScaling  = EnvScalingValue          (testOperator1, 1);
+  SustainHoldValue         op1SustainHold = SustainHoldValue         (testOperator1, 1);
+  VibratoValue             op1Vibrato     = VibratoValue             (testOperator1, 1);
+  TremoloValue             op1Tremolo     = TremoloValue             (testOperator1, 1);
+  AttackValue              op1Attack      = AttackValue              (testOperator1, 1);
+  DecayValue               op1Decay       = DecayValue               (testOperator1, 1);
+  SustainValue             op1Sustain     = SustainValue             (testOperator1, 1);
+  ReleaseValue             op1Release     = ReleaseValue             (testOperator1, 1);
 
   OperatorValue * values[10] = {
     &op1Waveform,
@@ -567,10 +567,14 @@ public:
       LCD::clear();
 
       OperatorValue * value = values[uiMenu];
-      
+    
       char str[50];
-      snprintf(str, sizeof(str), "%c %s", titleRow() ? '>' : ' ', value->displayName);
-      
+    
+      str[0] = titleRow() ? '>' : ' ';
+      str[1] = ' ';
+    
+      value->getParamString(str + 2, sizeof(str) - 2);
+
       LCD::drawText(Font8Console::data(), 0, 0, str, Font8::DrawingScale2);
       
       str[0] = valueRow() ? '>' : ' ';
