@@ -237,3 +237,48 @@ struct ReleaseValue : OperatorValue {
   int getValue() { return oplOperator.rr; }
   void setValue(int v) { oplOperator.rr = v; }
 };
+
+struct OperatorValues {
+  WaveformValue            waveform;
+  FrequencyMutliplierValue freqMult;
+  EnvScalingValue          envScaling;
+  SustainHoldValue         sustainHold;
+  VibratoValue             vibrato;
+  TremoloValue             tremolo;
+  AttackValue              attack;
+  DecayValue               decay;
+  SustainValue             sustain;
+  ReleaseValue             release;
+  
+  OperatorValues(OPL3::OperatorSetup &oplOperator, uint8_t nr)
+    : waveform    (WaveformValue            (oplOperator, nr)),
+      freqMult    (FrequencyMutliplierValue (oplOperator, nr)),
+      envScaling  (EnvScalingValue          (oplOperator, nr)),
+      sustainHold (SustainHoldValue         (oplOperator, nr)),
+      vibrato     (VibratoValue             (oplOperator, nr)),
+      tremolo     (TremoloValue             (oplOperator, nr)),
+      attack      (AttackValue              (oplOperator, nr)),
+      decay       (DecayValue               (oplOperator, nr)),
+      sustain     (SustainValue             (oplOperator, nr)),
+      release     (ReleaseValue             (oplOperator, nr))
+  { }
+  
+  const int valuesCount = 10;
+  
+  OperatorValue *valueAt(int i) {
+    switch (i) {
+      case  0: return &waveform;
+      case  1: return &freqMult;
+      case  2: return &envScaling;
+      case  3: return &sustainHold;
+      case  4: return &vibrato;
+      case  5: return &tremolo;
+      case  6: return &attack;
+      case  7: return &decay;
+      case  8: return &sustain;
+      case  9: return &release;
+      default: return nullptr;
+    }
+  }
+  
+};

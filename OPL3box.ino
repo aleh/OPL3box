@@ -518,30 +518,8 @@ public:
 
   // - //
 
-  WaveformValue            op1Waveform    = WaveformValue            (testOperator1, 1);
-  FrequencyMutliplierValue op1FreqMult    = FrequencyMutliplierValue (testOperator1, 1);
-  EnvScalingValue          op1EnvScaling  = EnvScalingValue          (testOperator1, 1);
-  SustainHoldValue         op1SustainHold = SustainHoldValue         (testOperator1, 1);
-  VibratoValue             op1Vibrato     = VibratoValue             (testOperator1, 1);
-  TremoloValue             op1Tremolo     = TremoloValue             (testOperator1, 1);
-  AttackValue              op1Attack      = AttackValue              (testOperator1, 1);
-  DecayValue               op1Decay       = DecayValue               (testOperator1, 1);
-  SustainValue             op1Sustain     = SustainValue             (testOperator1, 1);
-  ReleaseValue             op1Release     = ReleaseValue             (testOperator1, 1);
-
-  OperatorValue * values[10] = {
-    &op1Waveform,
-    &op1FreqMult,    
-    &op1EnvScaling, 
-    &op1SustainHold,
-    &op1Vibrato,     
-    &op1Tremolo,   
-    &op1Attack,      
-    &op1Decay,    
-    &op1Sustain,    
-    &op1Release,
-  };
-
+  OperatorValues operator1Values = OperatorValues(testOperator1, 1);
+  
   int uiCaret = 0;
   int uiMenu = 0;
 
@@ -554,19 +532,19 @@ public:
   
   void onEncoderDelta(int delta) {
     if (titleRow()) {
-      int count = sizeof(values) / sizeof(OperatorValue *);
+      int count = operator1Values.valuesCount;
       uiMenu = max(0, min(count - 1, uiMenu + delta));
     }
     
-    if (valueRow()) { 
-      values[uiMenu]->onEncoderDelta(delta);
+    if (valueRow()) {
+      operator1Values.valueAt(uiMenu)->onEncoderDelta(delta);
     }
   }
 
   void draw() {
       LCD::clear();
 
-      OperatorValue * value = values[uiMenu];
+      OperatorValue * value = operator1Values.valueAt(uiMenu);
     
       char str[50];
     
