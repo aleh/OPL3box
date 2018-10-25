@@ -519,6 +519,20 @@ public:
   // - //
 
   OperatorValues operator1Values = OperatorValues(testOperator1, 1);
+  OperatorValues operator2Values = OperatorValues(testOperator2, 2);
+  
+  int valuesCount() {
+    return operator1Values.valuesCount + operator2Values.valuesCount;
+  }
+  
+  OperatorValue * valueAt(int i) {
+    if (i < operator1Values.valuesCount) {
+      return operator1Values.valueAt(i);
+    }
+    else {
+      return operator2Values.valueAt(i - operator1Values.valuesCount);
+    }
+  }
   
   int uiCaret = 0;
   int uiMenu = 0;
@@ -532,19 +546,19 @@ public:
   
   void onEncoderDelta(int delta) {
     if (titleRow()) {
-      int count = operator1Values.valuesCount;
+      int count = valuesCount();
       uiMenu = max(0, min(count - 1, uiMenu + delta));
     }
     
     if (valueRow()) {
-      operator1Values.valueAt(uiMenu)->onEncoderDelta(delta);
+      valueAt(uiMenu)->onEncoderDelta(delta);
     }
   }
 
   void draw() {
       LCD::clear();
 
-      OperatorValue * value = operator1Values.valueAt(uiMenu);
+      OperatorValue * value = valueAt(uiMenu);
     
       char str[50];
     
@@ -566,7 +580,6 @@ public:
 };
 
 void setup() {
-
   encoder1PinA::setInput(true);
   encoder1PinB::setInput(true);
   encoderButton::setInput(true);
