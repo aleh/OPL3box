@@ -250,15 +250,15 @@ public:
     struct __attribute__((packed)) {
 
       // 20+
-      uint8_t mult : 4;
-      uint8_t ksr : 1;
-      uint8_t egt : 1;
-      uint8_t vib : 1;
-      uint8_t am : 1;
+      uint8_t mult : 4; // freq mult
+      uint8_t ksr : 1;  // envelope scaling
+      uint8_t egt : 1;  // sustain
+      uint8_t vib : 1;  // vibrato
+      uint8_t am : 1;   // tremolo
 
       // 40+
-      uint8_t tl : 6;
-      uint8_t ksl : 2;
+      uint8_t tl : 6;   // output level
+      uint8_t ksl : 2;  // keyboard scale level
 
       // 60+
       uint8_t dr : 4;
@@ -334,6 +334,8 @@ typedef FastPin<A3> encoder1PinB;
 EC11 encoder1;
 
 typedef SlowPin<16> encoderButton;
+
+#include "UI.h"
 
 class OPL3box : protected a21::MIDIParser<OPL3box> {
 
@@ -464,12 +466,6 @@ public:
 
   bool buttonPressed;
 
-  void draw() {
-      LCD::clear();
-      char str[10];
-      itoa(value, str, 16);
-      LCD::drawTextCentered(Font8Console::data(), 0, 1, LCD::Cols, str, Font8::DrawingScale2);      
-  }  
   
   static void check() {
 
@@ -498,20 +494,15 @@ public:
 
     bool buttonPressedNow = !encoderButton::read();
     if (self.buttonPressed && !buttonPressedNow) {
-      self.value = 0;
+      self.onEncoderButton();
       needsRedraw = true;
     }
     self.buttonPressed = buttonPressedNow;
 
     EC11Event e;
     if (encoder1.read(&e)) {
-      
-      if (e.type == EC11Event::StepCW) {        
-        self.value++;
-      } else {
-        self.value--;
-      }
-      
+
+      self.onEncoderDelta(e.type == EC11Event::StepCW ? +1 : -1);
       needsRedraw = true;
     }
 
@@ -524,10 +515,71 @@ public:
       self.draw();
     }
   }
+
+  // - //
+
+  OperatorValues operator1Values = OperatorValues(testOperator1, 1);
+  OperatorValues operator2Values = OperatorValues(testOperator2, 2);
+  
+  int valuesCount() {
+    return operator1Values.valuesCount + operator2Values.valuesCount;
+  }
+  
+  OperatorValue * valueAt(int i) {
+    if (i < operator1Values.valuesCount) {
+      return operator1Values.valueAt(i);
+    }
+    else {
+      return operator2Values.valueAt(i - operator1Values.valuesCount);
+    }
+  }
+  
+  int uiCaret = 0;
+  int uiMenu = 0;
+
+  bool titleRow() { return uiCaret == 0; }
+  bool valueRow() { return uiCaret == 1; }
+
+  void onEncoderButton() {
+    uiCaret =  (uiCaret + 1) % 2;
+  }
+  
+  void onEncoderDelta(int delta) {
+    if (titleRow()) {
+      int count = valuesCount();
+      uiMenu = max(0, min(count - 1, uiMenu + delta));
+    }
+    
+    if (valueRow()) {
+      valueAt(uiMenu)->onEncoderDelta(delta);
+    }
+  }
+
+  void draw() {
+      LCD::clear();
+
+      OperatorValue * value = valueAt(uiMenu);
+    
+      char str[50];
+    
+      str[0] = titleRow() ? '>' : ' ';
+      str[1] = ' ';
+    
+      value->getParamString(str + 2, sizeof(str) - 2);
+
+      LCD::drawText(Font8Console::data(), 0, 0, str, Font8::DrawingScale2);
+      
+      str[0] = valueRow() ? '>' : ' ';
+      str[1] = ' ';
+
+      value->getValueString(str + 2, sizeof(str) - 2);
+      
+      LCD::drawText(Font8Console::data(), 0, 2, str, Font8::DrawingScale2);
+  }
+
 };
 
 void setup() {
-
   encoder1PinA::setInput(true);
   encoder1PinB::setInput(true);
   encoderButton::setInput(true);
@@ -539,4 +591,3 @@ void loop() {
   encoder1.checkPins(encoder1PinA::read(), encoder1PinB::read());
   OPL3box::check();
 }
-
