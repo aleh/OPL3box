@@ -545,17 +545,24 @@ public:
   }
   
   void onEncoderDelta(int delta) {
+    
     if (titleRow()) {
       int count = valuesCount();
       uiMenu = max(0, min(count - 1, uiMenu + delta));
     }
     
     if (valueRow()) {
+      
       valueAt(uiMenu)->onEncoderDelta(delta);
+
+      // Assuming something about operators has changed and updating them here for now.
+      OPL3::updateOperator(0, testOperator1);
+      OPL3::updateOperator(3, testOperator2);
     }
   }
 
   void draw() {
+    
       LCD::clear();
 
       OperatorValue * value = valueAt(uiMenu);
