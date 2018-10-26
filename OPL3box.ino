@@ -314,16 +314,16 @@ typedef YM262<
   FastPin<A0>  // A1 of the chip.
 > OPL3;
 
-// On Pro Micro the LED is attached to D5, which is a pin with internal number 30. 
+// On the Pro Micro the debug LED is attached to D5, which is a pin with internal number 30. 
 // It is also connected to VCC, so the pin level should be LOW in order to light it, thus inversion.
 typedef InvertedPin< FastPin<30> > DebugLED;
 
 // We want to use a little OLED screen here and talk to it via I2C. 
-// TODO: it would be better to use a hardware one.
+// TODO: it would be better to use a hardware I2C.
 typedef SoftwareI2C< 
   FastPin<2>, // SCK
   FastPin<3>, // SDA
-  true // If true, then use buil-in pull-ups on the pins.
+  true // If true, then use built-in pull-ups on the pins.
 > I2C;
 
 // 128x32 (i.e. 4 "pages" high).
@@ -333,7 +333,7 @@ typedef FastPin<A2> encoder1PinA;
 typedef FastPin<A3> encoder1PinB;
 EC11 encoder1;
 
-typedef SlowPin<16> encoderButton;
+typedef FastPin<16> encoderButton;
 
 #include "UI.h"
 
@@ -465,7 +465,6 @@ public:
   uint8_t value;
 
   bool buttonPressed;
-
   
   static void check() {
 
@@ -477,12 +476,11 @@ public:
       self.prevTickMillis = now;
       self.tick();
     }
-    
+
+    // Classic MIDI on the serial port.
     if (Serial1.available()) {
       self.handleByte(Serial1.read());
     }
-
-    bool needsRedraw = false;
 
     // Simplified USB MIDI for now.
     midiEventPacket_t event = MidiUSB.read();
@@ -491,6 +489,8 @@ public:
       self.handleByte(event.byte2);
       self.handleByte(event.byte3);
     }
+
+    bool needsRedraw = false;
 
     bool buttonPressedNow = !encoderButton::read();
     if (self.buttonPressed && !buttonPressedNow) {
@@ -501,17 +501,12 @@ public:
 
     EC11Event e;
     if (encoder1.read(&e)) {
-
-      self.onEncoderDelta(e.type == EC11Event::StepCW ? +1 : -1);
+      // Need to use 'count' instead of 1 as there can be multiple turns accumulated when the encoder is fed from an interrupt handler.
+      self.onEncoderDelta(e.type == EC11Event::StepCW ? e.count : -e.count);
       needsRedraw = true;
     }
 
-    if (needsRedraw) {
-
-      // This is just to test the channels.
-      self.testChannel.cha = (self.value >> 0) & 1;
-      self.testChannel.chb = (self.value >> 1) & 1;
-      
+    if (needsRedraw) {      
       self.draw();
     }
   }
