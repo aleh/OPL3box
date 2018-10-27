@@ -424,7 +424,8 @@ public:
     LCD::begin();
     LCD::setFlippedVertically(false);
     LCD::setContrast(10);
-    
+
+    self.page0 = true;
     LCD::clear();
     LCD::drawTextCentered(Font8Console::data(), 0, 1, LCD::Cols, "OPL3 BOX", Font8::DrawingScale2);
     
@@ -556,9 +557,19 @@ public:
     }
   }
 
+  bool page0;
+
   void draw() {
-    
-      LCD::clear();
+
+      // Drawing in the invisible half of the video memory.
+      page0 = !page0;    
+
+      uint8_t pageOffset = page0 ? 0 : 4;
+
+      LCD::clear(
+        0, pageOffset + 0, 
+        LCD::Cols - 1, pageOffset + LCD::Pages - 1
+      );
 
       OperatorValue * value = valueAt(uiMenu);
     
@@ -569,14 +580,17 @@ public:
     
       value->getParamString(str + 2, sizeof(str) - 2);
 
-      LCD::drawText(Font8Console::data(), 0, 0, str, Font8::DrawingScale2);
+      LCD::drawText(Font8Console::data(), 0, pageOffset + 0, str, Font8::DrawingScale2);
       
       str[0] = valueRow() ? '>' : ' ';
       str[1] = ' ';
 
       value->getValueString(str + 2, sizeof(str) - 2);
       
-      LCD::drawText(Font8Console::data(), 0, 2, str, Font8::DrawingScale2);
+      LCD::drawText(Font8Console::data(), 0, pageOffset + 2, str, Font8::DrawingScale2);
+
+      // Flipping the visible and invisible parts.
+      LCD::setDisplayStartLine(page0 ? 0 : 32);
   }
 
 };
