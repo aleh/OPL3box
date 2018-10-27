@@ -426,6 +426,7 @@ public:
     LCD::setContrast(10);
 
     self.page0 = true;
+    LCD::setDisplayStartLine(0);
     LCD::clear();
     LCD::drawTextCentered(Font8Console::data(), 0, 1, LCD::Cols, "OPL3 BOX", Font8::DrawingScale2);
     
